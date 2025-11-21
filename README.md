@@ -48,3 +48,21 @@ No more than 2-3 hours
 Sure
 - How long should the story be?
 You decide
+
+---
+
+## Running the Application
+
+### Command Line Interface
+Run the CLI version:
+```bash
+python main.py
+```
+
+### Streamlit Web Interface
+Run the web UI:
+```bash
+streamlit run app.py
+```
+
+The Streamlit app will open in your browser at `http://localhost:8501` with a user-friendly interface for generating bedtime stories.
