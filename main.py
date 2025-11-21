@@ -4,11 +4,12 @@ from story_improviser import *
 """
 Before submitting the assignment, describe here in a few sentences what you would have built next if you spent 2 more hours on this project:
 
-If given 2 more hours, I would add a simple GUI or web interface where parents can
-select today's learning focus (confidence, kindness, curiosity, etc.) with icons and
-save their child's favorite characters. I would also log which themes are chosen most
-often and adapt future stories to revisit key lessons in new situations, building a
-gentle, personalized learning journey over time.
+With 2 more hours, the next step would be to turn the “parent intent” selection into a lightweight Parent Intent Library, 
+where prior sessions’ themes (confidence, kindness, curiosity, etc.) are remembered and used to suggest follow-up stories that build a gentle, ongoing learning arc over multiple nights. 
+I would also enhance the Streamlit UI so parents have a richer yet simple experience (e.g., clearer previews of active 
+constraints, saved favorite prompts, and a more structured “for parents” panel with guidance questions). 
+Finally, I would introduce a difficulty-aware pipeline that routes “simple” requests through a lightweight path and 
+sends more emotionally complex topics (e.g., fear, big transitions) through a deeper pipeline with extra judging and validation, balancing quality, safety, and cost.
 """
 
 def main():
