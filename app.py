@@ -6,7 +6,7 @@ from story_generator import (
     arc_instruction,
     category_instruction
 )
-from story_improviser import judge_and_improve_story, revise_story
+from story_improviser import judge_and_improve_story, revise_story, JudgeFeedback
 
 # Page configuration
 st.set_page_config(
@@ -33,6 +33,8 @@ if "length_display_saved" not in st.session_state:
     st.session_state.length_display_saved = None
 if "arc_display_saved" not in st.session_state:
     st.session_state.arc_display_saved = None
+if "judge_feedbacks" not in st.session_state:
+    st.session_state.judge_feedbacks = []
 
 # ---------- Sidebar: Story Settings ----------
 with st.sidebar:
@@ -95,12 +97,14 @@ if st.button("✨ Generate Story", type="primary", use_container_width=True):
         with st.spinner("Generating your bedtime story draft..."):
             draft_story = generate_story(user_request, length_choice, arc_choice, category)
 
-        # Step 3: Improve story
-        with st.spinner("Improving the story for clarity, age-appropriateness, and bedtime tone..."):
-            final_story = judge_and_improve_story(user_request, draft_story)
+        # Step 3: Judge panel evaluation and improvement
+        arc_description = arc_instruction(arc_choice)
+        with st.spinner("Evaluating the story with our judge panel (Safety, Narrative, Emotional Tone, Parent-Intent)..."):
+            final_story, judge_feedbacks = judge_and_improve_story(user_request, draft_story, arc_choice, arc_description)
 
         # Persist in session state
         st.session_state.final_story = final_story
+        st.session_state.judge_feedbacks = judge_feedbacks
         st.session_state.story_generated = True
         st.session_state.length_display_saved = length_display
         st.session_state.arc_display_saved = arc_display
@@ -123,6 +127,71 @@ if st.session_state.story_generated and st.session_state.final_story:
         ''',
         unsafe_allow_html=True
     )
+    
+    # Judge Panel Scorecard
+    st.markdown("---")
+    st.header("⚖️ Judge Panel Scorecard")
+    st.markdown("Our panel of expert judges has evaluated your story across multiple dimensions:")
+    
+    if st.session_state.judge_feedbacks:
+        # Create a 2x2 grid for the 4 judges
+        judge_cols = st.columns(2)
+        
+        for idx, feedback in enumerate(st.session_state.judge_feedbacks):
+            col = judge_cols[idx % 2]
+            with col:
+                # Judge name (shortened)
+                judge_short_name = feedback.judge_name.replace("Judge", "").strip()
+                st.markdown(
+                    f'''
+                    <div style="background-color: #f0f2f6; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #4CAF50;">
+                        <h3 style="margin-top: 0; color: #1f77b4;">👨‍⚖️ {judge_short_name}</h3>
+                    </div>
+                    ''',
+                    unsafe_allow_html=True
+                )
+                
+                # Display scores with progress bars
+                for dimension, score in feedback.scores.items():
+                    # Calculate percentage for progress bar
+                    percentage = (score / 5) * 100
+                    # Color based on score
+                    if score >= 4:
+                        color = "#4CAF50"  # Green
+                        emoji = "🟢"
+                    elif score >= 3:
+                        color = "#FFC107"  # Yellow/Orange
+                        emoji = "🟡"
+                    else:
+                        color = "#F44336"  # Red
+                        emoji = "🔴"
+                    
+                    st.markdown(
+                        f'''
+                        <div style="margin-bottom: 10px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <span style="font-weight: 600;">{dimension}</span>
+                                <span>{emoji} <strong>{score}/5</strong></span>
+                            </div>
+                            <div style="background-color: #e0e0e0; border-radius: 10px; height: 8px; overflow: hidden;">
+                                <div style="background-color: {color}; height: 100%; width: {percentage}%; transition: width 0.3s;"></div>
+                            </div>
+                        </div>
+                        ''',
+                        unsafe_allow_html=True
+                    )
+                
+                # Display feedback
+                st.markdown(
+                    f'''
+                    <div style="background-color: #fff9e6; padding: 10px; border-radius: 5px; margin-top: 10px; border-left: 3px solid #FFC107;">
+                        <em style="color: #666;">💬 {feedback.feedback}</em>
+                    </div>
+                    ''',
+                    unsafe_allow_html=True
+                )
+    else:
+        st.info("Judge feedback not available for this story.")
     
     # Story info
     with st.expander("📋 Story Details"):
@@ -180,6 +249,7 @@ if st.session_state.story_generated and st.session_state.final_story:
         st.session_state.category = ""
         st.session_state.length_display_saved = None
         st.session_state.arc_display_saved = None
+        st.session_state.judge_feedbacks = []
     
     # ---------- Download button ----------
     st.download_button(

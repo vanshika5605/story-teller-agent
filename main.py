@@ -27,8 +27,21 @@ def main():
     print("Generating your bedtime story draft...\n")
     draft_story = generate_story(user_request, length_choice, arc_choice, category)
 
-    print("Improving the story for clarity, age-appropriateness, and bedtime tone...\n")
-    final_story = judge_and_improve_story(user_request, draft_story)
+    print("Evaluating the story with our judge panel...\n")
+    from story_generator import arc_instruction
+    arc_description = arc_instruction(arc_choice)
+    final_story, judge_feedbacks = judge_and_improve_story(user_request, draft_story, arc_choice, arc_description)
+    
+    # Display judge scorecard
+    print("\n" + "="*60)
+    print("JUDGE PANEL SCORECARD")
+    print("="*60)
+    for feedback in judge_feedbacks:
+        print(f"\n{feedback.judge_name}:")
+        for dimension, score in feedback.scores.items():
+            print(f"  {dimension}: {score}/5")
+        print(f"  Feedback: {feedback.feedback}")
+    print("="*60 + "\n")
 
     print("Here is your bedtime story:\n")
     print(final_story)
