@@ -128,7 +128,7 @@ The Streamlit app will automatically open in your browser at `http://localhost:8
 
 ## High-Level Architecture
 
-The Bedtime Story Generator uses a multi-agent architecture with specialized components:
+The Bedtime Story Generator uses a multi-agent architecture with specialized components. Below is a **block diagram** illustrating the flow of prompts and interactions between the storyteller, judge panel, user, and other components:
 
 ```mermaid
 flowchart TD
@@ -159,22 +159,22 @@ flowchart TD
     H -->|No| J[Complete]
     I --> J
     
-    style A fill:#e1f5ff
-    style B fill:#fff4e1
-    style B1 fill:#fff4e1
-    style B2 fill:#fff4e1
-    style C fill:#f0f0f0
-    style D fill:#ffe1f5
-    style D1 fill:#ffe1f5
-    style D2 fill:#ffe1f5
-    style D3 fill:#ffe1f5
-    style D4 fill:#ffe1f5
-    style E fill:#e8f5e9
-    style F fill:#fff4e1
-    style G fill:#e1f5ff
-    style H fill:#fff9c4
-    style I fill:#e1f5ff
-    style J fill:#c8e6c9
+    style A fill:#0066cc,color:#fff
+    style B fill:#cc6600,color:#fff
+    style B1 fill:#cc6600,color:#fff
+    style B2 fill:#cc6600,color:#fff
+    style C fill:#666666,color:#fff
+    style D fill:#cc0066,color:#fff
+    style D1 fill:#cc0066,color:#fff
+    style D2 fill:#cc0066,color:#fff
+    style D3 fill:#cc0066,color:#fff
+    style D4 fill:#cc0066,color:#fff
+    style E fill:#006600,color:#fff
+    style F fill:#cc6600,color:#fff
+    style G fill:#0066cc,color:#fff
+    style H fill:#cc9900,color:#000
+    style I fill:#0066cc,color:#fff
+    style J fill:#006600,color:#fff
 ```
 
 ### Key Components
