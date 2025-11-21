@@ -46,24 +46,21 @@ def categorize_request(user_request: str) -> str:
     Use the LLM as a classifier to categorize the request into a high-level theme.
     Returns one of a small set of category labels.
     """
-    prompt = f"""
-    You are a classifier for children's bedtime story requests.
+    system_prompt = """You are a classifier for children's bedtime story requests.
 
-    Given the request below, choose exactly ONE category from this list:
-    - adventure
-    - friendship
-    - overcoming_fear
-    - animals
-    - bedtime_calming
-    - silly_fun
+Given a request, choose exactly ONE category from this list:
+- adventure
+- friendship
+- overcoming_fear
+- animals
+- bedtime_calming
+- silly_fun
 
-    Return ONLY the category name, with no explanation.
+Return ONLY the category name, with no explanation."""
 
-    REQUEST:
-    "{user_request}"
-    """.strip()
+    user_prompt = f'REQUEST:\n"{user_request}"'
 
-    raw = call_model(prompt, max_tokens=20, temperature=0.0).strip().lower()
+    raw = call_model(system_prompt, user_prompt, max_tokens=20, temperature=0.0).strip().lower()
 
     valid = {"adventure", "friendship", "overcoming_fear", "animals", "bedtime_calming", "silly_fun"}
     if raw in valid:
@@ -175,50 +172,52 @@ def build_storyteller_prompt(
     length_choice: str,
     arc_choice: str,
     category: str
-) -> str:
+) -> tuple[str, str]:
     """
     Build the prompt for the 'storyteller' agent, incorporating:
     - user request
     - length choice
     - parent-intent arc
     - category-specific instructions
+    
+    Returns a tuple of (system_prompt, user_prompt).
     """
     length_text = length_instruction(length_choice)
     arc_text = arc_instruction(arc_choice)
     category_text = category_instruction(category)
 
-    return f"""
-    You are a warm and imaginative children's storyteller.
+    system_prompt = f"""You are a warm and imaginative children's storyteller.
 
-    Your audience is children between 5 and 10 years old who are about to go to sleep.
-    An adult (a parent or caregiver) will read this story aloud to the child.
+Your audience is children between 5 and 10 years old who are about to go to sleep.
+An adult (a parent or caregiver) will read this story aloud to the child.
 
-    Here is the adult's request for the story:
-    "{user_request}"
+Story requirements:
+- {length_text}
+- Use simple, clear language suitable for ages 5–10.
+- Keep the tone gentle, cozy, and reassuring (no graphic or intense content).
+- Give the story a clear beginning, middle, and end.
+- Ensure the story is easy to follow when read aloud.
+- Include a positive, comforting ending.
+- End with a short, explicit moral stated in one or two sentences.
 
-    Story requirements:
-    - {length_text}
-    - Use simple, clear language suitable for ages 5–10.
-    - Keep the tone gentle, cozy, and reassuring (no graphic or intense content).
-    - Give the story a clear beginning, middle, and end.
-    - Ensure the story is easy to follow when read aloud.
-    - Include a positive, comforting ending.
-    - End with a short, explicit moral stated in one or two sentences.
+Parent-intent story arc guidance:
+{arc_text}
 
-    Parent-intent story arc guidance:
-    {arc_text}
+Category guidance (from an internal classifier):
+Category = {category}
+{category_text}"""
 
-    Category guidance (from an internal classifier):
-    Category = {category}
-    {category_text}
+    user_prompt = f"""Here is the adult's request for the story:
+"{user_request}"
 
-    Now write the complete bedtime story.
-    """.strip()
+Now write the complete bedtime story."""
+
+    return (system_prompt, user_prompt)
     
 def generate_story(user_request: str, length_choice: str, arc_choice: str, category: str) -> str:
     """
     Use the storyteller prompt to generate an initial draft of the story.
     """
-    prompt = build_storyteller_prompt(user_request, length_choice, arc_choice, category)
-    story = call_model(prompt, max_tokens=1500, temperature=0.85)
+    system_prompt, user_prompt = build_storyteller_prompt(user_request, length_choice, arc_choice, category)
+    story = call_model(system_prompt, user_prompt, max_tokens=1500, temperature=0.85)
     return story
